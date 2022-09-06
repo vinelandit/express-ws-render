@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Client</title>
+</head>
+
+<body>
+    <audio id="bing">
+        <source src="piano_C5.mp3" type="audio/mpeg">
+</audio>
+    <h3>Click on the window.</h3>
+    <div id="output" style="font-family: Arial; font-size: 14px;"></div>
+    <script src="js/reconnecting-websocket.min.js"></script>
+    <script>
+        const output = document.getElementById("output");
+        const bing = document.getElementById('bing');
+        var init = true;
+        output.innerHTML = "Wait for connection...";
+        // const ws = new WebSocket("ws://localhost:3000");
+        const ws = new ReconnectingWebSocket("wss://ray-ws-service.onrender.com/");
+
+        var drawing = false;
+
+        ws.onopen =
+            () => {
+                output.innerHTML = "Connected to the server";
+                window.onmousemove = (event) => {
+                    if(drawing) {
+                        const x = event.clientX/window.innerWidth;
+                        const y = event.clientY/window.innerHeight;
+                        console.log(x + ", " + y)
+                        ws.send(JSON.stringify({x: x, y: y}));
+                    }
+                    
+                };
+
+                window.onmousedown = (event) => {
+                    drawing = true;
+                }
+
+                window.onmouseup = (event) => {
+                    drawing = false;
+                }
+
+                /* ws.onmessage = (event) => {
+                    console.log(event);
+                    console.log(ws);
+                    bing.currentTime = 0;
+                    bing.play();
+                    const msg = JSON.parse(event.data);
+                    output.innerHTML = `Answer from server: x = ${msg.x}, y = ${msg.y}`;
+                } */
+            };
+    </script>
+</body>
+
+</html>
